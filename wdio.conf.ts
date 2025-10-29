@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 export const config = {
   runner: 'local',
   
@@ -18,11 +21,11 @@ export const config = {
   maxInstances: 1,
 
   capabilities: [{
-    platformName: 'Android',
-    'appium:deviceName': 'emulator-5554', // Device ID from 'adb devices'
-    'appium:platformVersion': '16',       // Your Android version
-    'appium:automationName': 'UiAutomator2',
-    'appium:app': './apps/Android.SauceLabs.apk',
+    platformName: process.env.PLATFORM_NAME,
+    'appium:deviceName': process.env.DEVICE_NAME, // Device ID from 'adb devices'
+    'appium:platformVersion': process.env.PLATFORM_VERSION,       // Your Android version
+    'appium:automationName': process.env.AUTOMATION_NAME,
+    'appium:app': process.env.APP_PATH,
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 300,
     'appium:noReset': true,
