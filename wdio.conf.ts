@@ -10,9 +10,7 @@ export const config = {
   },
 
   specs: [
-    './src/specs/first-test.ts'
-    // Add more spec files here as you create them
-    // './src/specs/example-test.ts'
+    './src/specs/*.ts'
   ],
 
   exclude: [],
