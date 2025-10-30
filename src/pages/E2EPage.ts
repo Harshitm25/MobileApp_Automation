@@ -32,6 +32,8 @@ export class E2EPage {
 
   async openFilterLongPress(): Promise<void> {
     await waitForDisplayed(E2EPageLocators.modalSelectorButton, { timeout: 5000 });
+    const element=await driver.$(E2EPageLocators.modalSelectorButton);
+    await element.saveScreenshot('./screenshots/modal-selector-button.png'); //screenshot of the element
     await longPress(E2EPageLocators.modalSelectorButton, 1200);
   }
 
