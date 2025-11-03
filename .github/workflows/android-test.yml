@@ -1,3 +1,16 @@
+# Android App Automation Workflow
+# 
+# This workflow runs tests in two modes:
+# 1. Emulator tests (default): Runs on GitHub-hosted Ubuntu with emulator
+# 2. Real device tests: Runs on self-hosted runner with connected Android device
+#
+# To run real device tests:
+# 1. Set up a self-hosted runner with an Android device connected via USB
+# 2. Make sure USB debugging is enabled on the device
+# 3. Trigger the workflow manually and select "Run tests on real device"
+#
+# Note: UiAutomator2 driver is installed automatically in both modes
+
 name: Android App Automation
 
 on:
@@ -5,10 +18,18 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      test_real_device:
+        description: 'Run tests on real device (requires self-hosted runner)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-  android-tests:
+  android-emulator-tests:
     runs-on: ubuntu-latest
+    if: github.event.inputs.test_real_device != 'true'
 
     steps:
       # Step 1: Checkout repository
@@ -56,7 +77,7 @@ jobs:
             npx appium --version || true
             npx appium driver list --installed || true
             # Install UiAutomator2 driver compatible with Appium 2.x
-            npx appium driver install --source=npm appium-uiautomator2-driver@2
+            npm install --save-dev appium-uiautomator2-driver@4.2.9 --legacy-peer-deps
 
             echo "Resolving Android platform version..."
             ANDROID_VERSION=$(adb -s emulator-5554 shell getprop ro.build.version.release | tr -d '\r')
@@ -76,4 +97,84 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
+          path: allure-results
+
+  android-real-device-tests:
+    runs-on: self-hosted  # Requires self-hosted runner with Android device connected
+    if: github.event.inputs.test_real_device == 'true'
+    
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Install UiAutomator2 driver
+      - name: Install UiAutomator2 driver
+        run: npm install --save-dev appium-uiautomator2-driver@4.2.9 --legacy-peer-deps
+
+      # Step 5: Check connected devices
+      - name: List connected devices
+        run: |
+          adb devices -l
+          echo "Make sure at least one device is listed as 'device' (not 'unauthorized')"
+
+      # Step 6: Get device info (using first connected device)
+      - name: Get device info
+        id: device_info
+        run: |
+          # Get first connected device ID
+          DEVICE_ID=$(adb devices | grep -w "device" | awk '{print $1}' | head -n 1)
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No connected devices found!"
+            exit 1
+          fi
+          echo "Using device: $DEVICE_ID"
+          echo "device_id=$DEVICE_ID" >> $GITHUB_OUTPUT
+          
+          # Get Android version
+          ANDROID_VERSION=$(adb -s $DEVICE_ID shell getprop ro.build.version.release | tr -d '\r')
+          echo "Android version: $ANDROID_VERSION"
+          echo "android_version=$ANDROID_VERSION" >> $GITHUB_OUTPUT
+
+      # Step 7: Grant permissions and prepare device
+      - name: Prepare device
+        run: |
+          DEVICE_ID="${{ steps.device_info.outputs.device_id }}"
+          # Wake up device
+          adb -s $DEVICE_ID shell input keyevent KEYCODE_WAKEUP || true
+          # Disable animations for faster execution
+          adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0
+          adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0
+          adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0
+
+      # Step 8: Install APK
+      - name: Install APK
+        run: adb -s "${{ steps.device_info.outputs.device_id }}" install -r ./apps/Android.SauceLabs.apk
+
+      # Step 9: Run WDIO tests
+      - name: Run WDIO tests on real device
+        run: |
+          export PLATFORM_NAME=Android
+          export DEVICE_NAME="${{ steps.device_info.outputs.device_id }}"
+          export PLATFORM_VERSION="${{ steps.device_info.outputs.android_version }}"
+          export AUTOMATION_NAME=UiAutomator2
+          export APP_PATH=./apps/Android.SauceLabs.apk
+          npx wdio run ./wdio.conf.ts
+
+      # Step 10: Upload Allure results
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-real-device
           path: allure-results
