@@ -25,8 +25,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Appium
-        run: npm install -g appium
+      - name: Install latest Appium
+        run: npm install -g appium@latest
     
       - name: Install UiAutomator2 driver
         run: appium driver install uiautomator2
