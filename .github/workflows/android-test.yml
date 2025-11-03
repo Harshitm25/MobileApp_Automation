@@ -25,6 +25,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Appium
+        run: npm install -g appium
+        
+      - name: Install UiAutomator2 driver
+        run: appium driver install uiautomator2
+
       # Step 4: Setup Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
