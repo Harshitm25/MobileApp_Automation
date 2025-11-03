@@ -27,6 +27,12 @@ jobs:
 
       - name: Install Appium
         run: npm install -g appium
+    
+      - name: Install UiAutomator2 driver
+        run: appium driver install uiautomator2
+
+      - name: Verify drivers
+        run: appium driver list --installed
 
       # Step 4: Setup Android SDK
       - name: Setup Android SDK
