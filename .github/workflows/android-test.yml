@@ -52,7 +52,21 @@ jobs:
             adb install -r ./apps/Android.SauceLabs.apk
 
             # Run WDIO tests using local Appium
+            echo "Preparing Appium driver..."
+            npx appium --version || true
+            npx appium driver list --installed || true
+            npx appium driver install uiautomator2
+
+            echo "Resolving Android platform version..."
+            ANDROID_VERSION=$(adb -s emulator-5554 shell getprop ro.build.version.release | tr -d '\r')
+            echo "Detected Android version: ${ANDROID_VERSION}"
+
             echo "Running WDIO tests..."
+            export PLATFORM_NAME=Android
+            export DEVICE_NAME=emulator-5554
+            export PLATFORM_VERSION=${ANDROID_VERSION}
+            export AUTOMATION_NAME=UiAutomator2
+            export APP_PATH=./apps/Android.SauceLabs.apk
             npx wdio run ./wdio.conf.ts
 
       # Step 6: Upload Allure results
