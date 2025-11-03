@@ -11,25 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node.js (can use 18 now)
+      # Step 2: Setup Node.js (use Node 18)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      # Install dependencies including Appium locally
+      # Step 3: Install project dependencies including Appium locally
       - name: Install dependencies
         run: npm ci
 
-      # Setup Android SDK
+      # Step 4: Setup Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Create and start emulator
+      # Step 5: Start Android Emulator and wait for boot
       - name: Start Android Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -38,6 +38,7 @@ jobs:
           arch: x86_64
           profile: pixel_5
           script: |
+            #!/bin/bash
             echo "Waiting for emulator to fully boot..."
             bootanim=""
             until [[ "$bootanim" =~ "stopped" ]]; do
@@ -45,8 +46,26 @@ jobs:
               echo "Waiting for emulator..."
               sleep 5
             done
+            echo "Emulator booted successfully!"
             adb devices
+
+            # Disable animations for faster test execution
+            adb -s emulator-5554 shell settings put global window_animation_scale 0.0
+            adb -s emulator-5554 shell settings put global transition_animation_scale 0.0
+            adb -s emulator-5554 shell settings put global animator_duration_scale 0.0
+
+            # Install APK
             echo "Installing APK..."
             adb install -r ./apps/Android.SauceLabs.apk
+
+            # Run WDIO tests using local Appium
             echo "Running WDIO tests..."
             npx wdio run ./wdio.conf.ts
+
+      # Step 6: Collect Allure results (optional)
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: allure-results
