@@ -26,6 +26,7 @@
     "@wdio/spec-reporter": "^8.15.11",
     "allure-commandline": "^2.34.1",
     "appium": "^2.19.0",
+    "appium-uiautomator2-driver": "^4.2.9",
     "dotenv": "^17.2.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
