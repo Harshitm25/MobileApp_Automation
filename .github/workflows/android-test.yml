@@ -38,24 +38,22 @@ jobs:
           arch: x86_64
           profile: pixel_5
           script: |
-            bash -lc '
-              echo "Emulator reported boot completed. Proceeding with setup...";
-              adb devices;
+            echo "Emulator reported boot completed. Proceeding with setup..."
+            adb devices
 
-              # Unlock screen & disable animations
-              adb -s emulator-5554 shell input keyevent 82;
-              adb -s emulator-5554 shell settings put global window_animation_scale 0.0;
-              adb -s emulator-5554 shell settings put global transition_animation_scale 0.0;
-              adb -s emulator-5554 shell settings put global animator_duration_scale 0.0;
+            # Unlock screen & disable animations
+            adb -s emulator-5554 shell input keyevent 82
+            adb -s emulator-5554 shell settings put global window_animation_scale 0.0
+            adb -s emulator-5554 shell settings put global transition_animation_scale 0.0
+            adb -s emulator-5554 shell settings put global animator_duration_scale 0.0
 
-              # Install APK
-              echo "Installing APK...";
-              adb install -r ./apps/Android.SauceLabs.apk;
+            # Install APK
+            echo "Installing APK..."
+            adb install -r ./apps/Android.SauceLabs.apk
 
-              # Run WDIO tests using local Appium
-              echo "Running WDIO tests...";
-              npx wdio run ./wdio.conf.ts;
-            '
+            # Run WDIO tests using local Appium
+            echo "Running WDIO tests..."
+            npx wdio run ./wdio.conf.ts
 
       # Step 6: Upload Allure results
       - name: Upload Allure results
