@@ -48,7 +48,7 @@ export const config = {
 
   services: [
     ['appium', {
-      command: 'appium'
+      command: './node_modules/.bin/appium'
     }]
   ],
 
