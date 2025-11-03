@@ -55,7 +55,8 @@ jobs:
             echo "Preparing Appium driver..."
             npx appium --version || true
             npx appium driver list --installed || true
-            npx appium driver install uiautomator2
+            # Install UiAutomator2 driver compatible with Appium 2.x
+            npx appium driver install --source=npm appium-uiautomator2-driver@2.30.1
 
             echo "Resolving Android platform version..."
             ANDROID_VERSION=$(adb -s emulator-5554 shell getprop ro.build.version.release | tr -d '\r')
