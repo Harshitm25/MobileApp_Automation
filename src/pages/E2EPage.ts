@@ -1,6 +1,6 @@
 import { driver } from '@wdio/globals';
 import { E2EPageLocators } from './E2EpageLocators';
-import { waitForDisplayed, waitAndClick, longPress, swipeByPercent, scrollToText } from '../utils/helpers';
+import { waitForDisplayed, waitAndClick, longPress, swipeByPercent, scrollToText ,tap} from '../utils/helpers';
 
 export class E2EPage {
   async selectStandardUser(): Promise<void> {
@@ -55,7 +55,24 @@ export class E2EPage {
     const el = await scrollToText(text);
     await el.click();
   }
+
+  async homePageValidation(): Promise<void> {
+    await waitForDisplayed(E2EPageLocators.homePageValidation, { timeout: 5000 });
+  }
+
+
+async OptionsPage(): Promise<void> 
+{
+  const option =await driver.$(E2EPageLocators.optionsButton);
+  await option.click();
 }
 
+async AboutPage(): Promise<void> {
+  // const x=160;
+  // const y=1216;
+  const about= await driver.$(E2EPageLocators.aboutPage)  
+  await about.click();
+}
+}
 // Singleton export
 export const e2ePage = new E2EPage();

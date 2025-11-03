@@ -28,9 +28,6 @@ allure-report/
 .wdio-*
 
 # App binaries
-apps/*.apk
-apps/*.ipa
-
 # Env
 .env
 .env.*

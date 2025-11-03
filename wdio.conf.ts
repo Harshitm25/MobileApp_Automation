@@ -83,25 +83,25 @@ export const config = {
 
   
   
-    afterTest: async function (test :any, context:any, { error }:any) {
-      if (error) {
-        // 1️⃣ Take screenshot in base64
-        const screenshot = await driver.takeScreenshot();
+    // afterTest: async function (test :any, context:any, { error }:any) {
+    //   if (error) {
+    //     // 1️⃣ Take screenshot in base64
+    //     const screenshot = await driver.takeScreenshot();
   
-        // 2️⃣ Attach screenshot to Allure report
-        allure.addAttachment('Screenshot on Failure', Buffer.from(screenshot, 'base64'), 'image/png');
+    //     // 2️⃣ Attach screenshot to Allure report
+    //     allure.addAttachment('Screenshot on Failure', Buffer.from(screenshot, 'base64'), 'image/png');
   
-        // 3️⃣ Optionally save local file too
-        const filePath = `./errorShots/${test.title.replace(/ /g, '_')}.png`;
-        fs.writeFileSync(filePath, screenshot, 'base64');
-        console.log(`📸 Screenshot saved: ${filePath}`);
+    //     // 3️⃣ Optionally save local file too
+    //     const filePath = `./errorShots/${test.title.replace(/ /g, '_')}.png`;
+    //     fs.writeFileSync(filePath, screenshot, 'base64');
+    //     console.log(`📸 Screenshot saved: ${filePath}`);
   
-        // 4️⃣ Capture Android device logs and attach
-        const logs = await driver.execute('mobile: getLog', { type: 'logcat' }) as Array<{ message: string }>;
-        const logText = logs.map(l => l.message).join('\n');
-        allure.addAttachment('Device Logs', logText, 'text/plain');
-      }
-    },
+    //     // 4️⃣ Capture Android device logs and attach
+    //     const logs = await driver.execute('mobile: getLog', { type: 'logcat' }) as Array<{ message: string }>;
+    //     const logText = logs.map(l => l.message).join('\n');
+    //     allure.addAttachment('Device Logs', logText, 'text/plain');
+    //   }
+    // },
   
 };
 
