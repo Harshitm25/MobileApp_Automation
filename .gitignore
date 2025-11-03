@@ -28,8 +28,7 @@ allure-report/
 
 # App binaries
 # Env
-.env
-.env.*
+
 
 # Misc
 .sentryclirc
