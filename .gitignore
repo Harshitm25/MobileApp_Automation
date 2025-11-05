@@ -35,3 +35,4 @@ allure-report/
 
 # env
 .envactions-runner/
+actions-runner/
