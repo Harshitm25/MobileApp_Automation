@@ -37,15 +37,15 @@ export const config = {
 
   // iOS configuration for basic run
   capabilities: [{
-    platformName: 'iOS',
-    'appium:automationName': 'XCUITest',
-    'appium:deviceName': 'Harshit’s iPhone',
-    'appium:udid': '00008140-001074A43CEA801C',
-    'appium:platformVersion': '18.5',
-    'appium:xcodeOrgId': '83CMVAC3BN',
-    'appium:xcodeSigningId': 'Apple Development',
-    'appium:updatedWDABundleId': 'com.harshit.wda.runner',
-    'appium:bundleId': 'money.super.payments',
+    platformName: process.env.PLATFORM_NAME,
+    'appium:automationName': process.env.AUTOMATION_NAME,
+    'appium:deviceName': process.env.DEVICE_NAME,
+    'appium:udid': process.env.UDID,
+    'appium:platformVersion': process.env.PLATFORM_VERSION,
+    'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
+    'appium:xcodeSigningId': process.env.XCODE_SIGNING_ID,
+    'appium:updatedWDABundleId': process.env.WDABundleId,
+    'appium:bundleId': process.env.Bundle_ID,
     'appium:newCommandTimeout': 300,
     'appium:noReset': true
   }],
