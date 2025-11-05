@@ -34,5 +34,4 @@ allure-report/
 .sentryclirc
 
 # env
-.envactions-runner/
-actions-runner/
+.env
