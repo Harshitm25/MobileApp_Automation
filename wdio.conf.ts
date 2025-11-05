@@ -22,16 +22,32 @@ export const config = {
 
   maxInstances: 1,
 
+  // Android configuration (commented out while running iOS)
+  // capabilities: [{
+  //   platformName: process.env.PLATFORM_NAME,
+  //   'appium:deviceName': process.env.DEVICE_NAME, // Device ID from 'adb devices'
+  //   'appium:platformVersion': process.env.PLATFORM_VERSION,       // Your Android version
+  //   'appium:automationName': process.env.AUTOMATION_NAME,
+  //   'appium:app': process.env.APP_PATH,
+  //   'appium:autoGrantPermissions': true,
+  //   'appium:newCommandTimeout': 300,
+  //   'appium:noReset': true,
+  //   'appium:fullReset': false
+  // }],
+
+  // iOS configuration for basic run
   capabilities: [{
-    platformName: process.env.PLATFORM_NAME,
-    'appium:deviceName': process.env.DEVICE_NAME, // Device ID from 'adb devices'
-    'appium:platformVersion': process.env.PLATFORM_VERSION,       // Your Android version
-    'appium:automationName': process.env.AUTOMATION_NAME,
-    'appium:app': process.env.APP_PATH,
-    'appium:autoGrantPermissions': true,
+    platformName: 'iOS',
+    'appium:automationName': 'XCUITest',
+    'appium:deviceName': 'Harshit’s iPhone',
+    'appium:udid': '00008140-001074A43CEA801C',
+    'appium:platformVersion': '18.5',
+    'appium:xcodeOrgId': '83CMVAC3BN',
+    'appium:xcodeSigningId': 'Apple Development',
+    'appium:updatedWDABundleId': 'com.harshit.wda.runner',
+    'appium:bundleId': 'money.super.payments',
     'appium:newCommandTimeout': 300,
-    'appium:noReset': true,
-    'appium:fullReset': false
+    'appium:noReset': true
   }],
 
   logLevel: 'info',
@@ -70,7 +86,7 @@ export const config = {
   },
 
   before: function () {
-    console.log('Starting Android test execution...');
+    console.log('Starting iOS test execution...');
   },
 
   // Disabled app uninstall cleanup to avoid repeated installs/uninstalls causing relaunch loops
