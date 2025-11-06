@@ -1,5 +1,5 @@
 import { driver, expect } from '@wdio/globals';
-// import { e2ePage } from '../pages/E2EPage';
+import { e2ePage } from '../pages/E2EPage';
 
 // describe('Login selection - simple flow', () => {
 
@@ -45,11 +45,43 @@ import { driver, expect } from '@wdio/globals';
 //   });
 // });
 
-describe('Basic app lifecycle', () => {
-  it('should activate app, pause, then terminate', async () => {
-    const bundleId = 'money.super.payments';
-    await driver.activateApp(bundleId);
-    await driver.pause(20000);
-    await driver.terminateApp(bundleId, { timeout: 5000 });
+describe('super money iOS End to End flow', () => {
+  it('Automating Nav bars and validating heading ', async () => {
+    // const bundleId = 'money.super.payments';
+    // await driver.activateApp(bundleId);
+    // await driver.pause(5000);
+    await e2ePage.cardScreenValidation();
+    const creditCardHeaderText = await e2ePage.getCreditCardHeaderText();
+    console.log("Credit Card Header Text: " + creditCardHeaderText);
+    expect(creditCardHeaderText).toBe('superCard');
+    
+    //FD
+    await e2ePage.fDValidation();
+    const fdHeaderText= await e2ePage.getFDHeaderText();
+    console.log("Fixed deposit Header Text: " + fdHeaderText);
+    expect(fdHeaderText).toBe('superFD');
+
+    // rewards
+    await e2ePage.rewardsValidation();
+    const rewardsHeaderText= await e2ePage.getRewardText();
+    console.log("Rewards Header Text: " + rewardsHeaderText);
+    expect(rewardsHeaderText).toBe('superRewards');
+
+    //history
+    await e2ePage.historyValidation();
+    const historyHeaderText=await e2ePage.getHistoryText();
+    console.log("Rewards Header Text: " + historyHeaderText);
+    expect(historyHeaderText).toBe('Payment history');
+
+    // send money
+
+
+    // await driver.terminateApp(bundleId, { timeout: 5000 });
   });
+
+  it('send money',async()=>
+  {
+    await driver.pause(5000);
+    // await e2ePage.sendMoney();
+  })
 });

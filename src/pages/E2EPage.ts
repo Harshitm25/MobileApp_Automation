@@ -1,6 +1,7 @@
 import { driver } from '@wdio/globals';
 import { E2EPageLocators } from './E2EpageLocators';
 import { waitForDisplayed, waitAndClick, longPress, swipeByPercent, scrollToText ,tap} from '../utils/helpers';
+import { promises } from 'dns';
 
 export class E2EPage {
   async selectStandardUser(): Promise<void> {
@@ -73,6 +74,72 @@ async AboutPage(): Promise<void> {
   const about= await driver.$(E2EPageLocators.aboutPage)  
   await about.click();
 }
+
+async dismissHomePageBottomSheet(): Promise<void> {
+  if(await driver.isElementDisplayed(E2EPageLocators.dismissHomePageBottomSheetButton)) {
+    await waitForDisplayed(E2EPageLocators.dismissHomePageBottomSheetButton, { timeout: 5000 });
+    const dismissButton = await driver.$(E2EPageLocators.dismissHomePageBottomSheetButton);
+    await dismissButton.saveScreenshot('./screenshots/dismiss-home-page-bottom-sheet-button.png'); //screenshot of the element
+    await dismissButton.click();
+  }
+}
+
+async cardScreenValidation(): Promise<void> {
+  await waitForDisplayed(E2EPageLocators.cardScreenValidation, { timeout: 5000 });
+  const cardScreen = await driver.$(E2EPageLocators.cardScreenValidation);
+  await cardScreen.click();
+}
+
+async getCreditCardHeaderText(): Promise<string> {
+  await waitForDisplayed(E2EPageLocators.creditCardHeaderText, { timeout: 5000 });
+  return await driver.$(E2EPageLocators.creditCardHeaderText).getText();
+}
+
+async fDValidation(): Promise<void> {
+  await waitForDisplayed(E2EPageLocators.fDValidation, { timeout: 5000 });
+  const fD = await driver.$(E2EPageLocators.fDValidation);
+  await fD.click();
+}
+
+async getFDHeaderText(): Promise<string> {  
+  await waitForDisplayed(E2EPageLocators.fdHeaderText,{timeout: 5000});
+  return await driver.$(E2EPageLocators.fdHeaderText).getText();
+
+}
+
+
+async rewardsValidation():Promise<void>{
+  await waitForDisplayed(E2EPageLocators.rewardsValidation, { timeout: 5000 });
+  const rewards = await driver.$(E2EPageLocators.rewardsValidation);
+  await rewards.click(); 
+}
+
+async getRewardText():Promise<string>{
+  await waitForDisplayed(E2EPageLocators.rewardHeaderText,{timeout:5000});
+  return await driver.$(E2EPageLocators.rewardHeaderText).getText();
+}
+
+async historyValidation():Promise<void>{
+  await waitForDisplayed(E2EPageLocators.historyValidation,{timeout:5000});
+  const history=await driver.$(E2EPageLocators.historyValidation)
+  await history.click();
+}
+
+async getHistoryText():Promise<string>{
+  await waitForDisplayed(E2EPageLocators.historyHeaderText,{timeout:5000});
+  return (await driver.$(E2EPageLocators.historyHeaderText)).getText();
+}
+
+// async sendMoney(): Promise<void>{
+//   await driver.execute('mobile: tap', { x: 121, y: 420 });
+//   await waitForDisplayed(E2EPageLocators.SearchBox,{timeout:5000});
+//   const searchInput = await driver.$(E2EPageLocators.SearchBox);
+//   await searchInput.setValue('9798244373');
+//   const senderName= await driver.$(E2EPageLocators.senderName);
+//   await senderName.click();
+
+// }
+
 }
 // Singleton export
 export const e2ePage = new E2EPage();

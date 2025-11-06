@@ -45,4 +45,71 @@ export class E2EPageLocators {
       : '//XCUIElementTypeStaticText[@name="test-Options"]';
 
   }
+
+  static get dismissHomePageBottomSheetButton(): string{
+    return driver.isAndroid
+      ? '//android.widget.Button[@content-desc="test-Dismiss"]'
+      : '(//*[@name="Send Rs 1 and get up to Rs 100 Send Rs 1 to your friends or family and get up to Rs 100 cashback. Send Money now"])[8]/XCUIElementTypeOther[1]';
+  }
+
+  static get cardScreenValidation(): string{
+    return driver.isAndroid
+      ? '//android.widget.TextView[@content-desc="test-Item title" and @text="Sauce Labs Backpack"]'
+      : '//*[@name="Card"]';
+  }
+
+  static get creditCardHeaderText(): string{
+    return driver.isAndroid
+      ? '//android.widget.TextView[@content-desc="test-Item title" and @text="Sauce Labs Backpack"]'
+      : '(//*[@name="superCard"])[6]';
+  }
+
+  static get fDValidation(): string{
+    return driver.isAndroid
+      ? '//android.widget.TextView[@content-desc="test-Item title" and @text="Sauce Labs Backpack"]'
+      : '~FD';
+  }
+
+  static get fdHeaderText(): string{
+    return driver.isAndroid
+    ? '//android.widget.TextView[@content-desc="test-Item title" and @text="Sauce Labs Backpack"]'
+    : '(//*[@name="superFD"])[7]';
+  }
+
+  static get rewardsValidation(): string{
+    return driver.isAndroid
+    ?'android'
+    : '~Rewards'
+  }
+
+  static get rewardHeaderText():string{
+    return driver.isAndroid
+    ?'android'
+    :'(//*[@name="superRewards"])[7]'
+  }
+
+  static get historyValidation(): string{
+    return driver.isAndroid
+    ?'android'
+    :'~History';
+  }
+
+  static get historyHeaderText(): string{
+    return driver.isAndroid
+    ?'android'
+    :'(//*[@name="Payment history"])[7]';
+  }
+
+  static get SearchBox(): string{
+    return driver.isAndroid
+    ?'android'
+    :'//*[@value="Number or name"]'
+  }
+
+  static get senderName(): string{
+    return driver.isAndroid
+    ?'android'
+    :'(//XCUIElementTypeOther[@name="Aditya 9798244373 Sent ₹1 on 06 November ‘25"])[4]'
+  }
+
 }
