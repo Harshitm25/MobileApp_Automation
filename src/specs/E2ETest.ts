@@ -1,5 +1,6 @@
 import { driver, expect } from '@wdio/globals';
 import { e2ePage } from '../pages/E2EPage';
+import { scrollToText } from '../utils/helpers';
 
 // describe('Login selection - simple flow', () => {
 
@@ -47,9 +48,6 @@ import { e2ePage } from '../pages/E2EPage';
 
 describe('super money iOS End to End flow', () => {
   it('Automating Nav bars and validating heading ', async () => {
-    // const bundleId = 'money.super.payments';
-    // await driver.activateApp(bundleId);
-    // await driver.pause(5000);
     await e2ePage.cardScreenValidation();
     const creditCardHeaderText = await e2ePage.getCreditCardHeaderText();
     console.log("Credit Card Header Text: " + creditCardHeaderText);
@@ -73,15 +71,20 @@ describe('super money iOS End to End flow', () => {
     console.log("Rewards Header Text: " + historyHeaderText);
     expect(historyHeaderText).toBe('Payment history');
 
-    // send money
-
-
-    // await driver.terminateApp(bundleId, { timeout: 5000 });
   });
 
-  it('send money',async()=>
+  it.only('send money flow',async()=>
   {
     await driver.pause(5000);
-    // await e2ePage.sendMoney();
+    await e2ePage.sendMoney();
+    const messageText = await e2ePage.paymentSuccessfulMessage();
+    console.log("message",messageText);
+    await expect(messageText).toContain("Paid to");
+
+    await driver.execute('mobile: scroll', { direction: 'down', name: 'Done' });
+    const doneButton = await e2ePage.doneButton();
+    await doneButton.click();
+
+    await driver.pause(5000);
   })
 });

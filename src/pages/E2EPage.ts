@@ -1,7 +1,8 @@
 import { driver } from '@wdio/globals';
 import { E2EPageLocators } from './E2EpageLocators';
 import { waitForDisplayed, waitAndClick, longPress, swipeByPercent, scrollToText ,tap} from '../utils/helpers';
-import { promises } from 'dns';
+import { promises, TIMEOUT } from 'dns';
+import { timeLog } from 'console';
 
 export class E2EPage {
   async selectStandardUser(): Promise<void> {
@@ -130,15 +131,39 @@ async getHistoryText():Promise<string>{
   return (await driver.$(E2EPageLocators.historyHeaderText)).getText();
 }
 
-// async sendMoney(): Promise<void>{
-//   await driver.execute('mobile: tap', { x: 121, y: 420 });
-//   await waitForDisplayed(E2EPageLocators.SearchBox,{timeout:5000});
-//   const searchInput = await driver.$(E2EPageLocators.SearchBox);
-//   await searchInput.setValue('9798244373');
-//   const senderName= await driver.$(E2EPageLocators.senderName);
-//   await senderName.click();
+async enterUpiPin():Promise<void>{
+    await waitForDisplayed(E2EPageLocators.clicko,{timeout:5000});
+   (await driver.$(E2EPageLocators.clicko)).click();
+   (await driver.$(E2EPageLocators.clicko)).click();
+   (await driver.$(E2EPageLocators.clicko)).click();
+   (await driver.$(E2EPageLocators.clicko)).click();
+   (await driver.$(E2EPageLocators.submitPin)).click()
+}
 
-// }
+async sendMoney(): Promise<void>{
+  await driver.execute('mobile: tap', { x: 121, y: 420 });
+  await waitForDisplayed(E2EPageLocators.SearchBox,{timeout:5000});
+  const searchInput = await driver.$(E2EPageLocators.SearchBox);
+  await searchInput.setValue('9798244373');
+  const senderName= await driver.$(E2EPageLocators.senderName);
+  await senderName.click();
+  const enterAmount=await driver.$(E2EPageLocators.enterAmountValue);
+  await enterAmount.setValue('1');
+  await driver.$(E2EPageLocators.clickPay).click();
+  await this.enterUpiPin();
+  await waitForDisplayed(E2EPageLocators.paymentSuccessful,{timeout:10000});
+}
+
+async paymentSuccessfulMessage():Promise<string>{
+  const element= await driver.$(E2EPageLocators.paymentSuccessMessage);
+  await element.waitForDisplayed({timeout:20000});
+  return await element.getText();
+}
+
+async doneButton(){
+  await waitForDisplayed(E2EPageLocators.doneButton);
+  return await $(E2EPageLocators.doneButton);
+}
 
 }
 // Singleton export

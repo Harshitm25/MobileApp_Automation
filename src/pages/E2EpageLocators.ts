@@ -109,7 +109,56 @@ export class E2EPageLocators {
   static get senderName(): string{
     return driver.isAndroid
     ?'android'
-    :'(//XCUIElementTypeOther[@name="Aditya 9798244373 Sent ₹1 on 06 November ‘25"])[4]'
+    :'(//XCUIElementTypeOther[@name="Aditya 9798244373 Sent ₹1 on 07 November ‘25"])[4]'
   }
+
+  static get enterAmountValue(): string{
+    return driver.isAndroid
+    ?'android'
+    :'//XCUIElementTypeTextField[@value="0"]'
+  }
+
+  static get clickPay(): string{
+    return driver.isAndroid
+    ?'android'
+    :'//*[@name="Pay ₹1"]'
+  }
+  
+  static get clickoo():string{
+    return driver.isAndroid
+    ? 'android'
+    :'//*[@name=""]';
+  }
+
+  static get clicko():string{
+    return driver.isAndroid
+    ? 'android'
+    :'//*[@name=""]';
+  }
+
+  static get submitPin(): string{
+    return driver.isAndroid
+    ? 'android'
+    :'//*[@name="SUBMIT"]';
+  }
+
+  static get paymentSuccessful(): string{
+    return driver.isAndroid
+    ? 'android'
+    :'//*[@name="Payment successful"]'
+  }
+
+  static get paymentSuccessMessage(): string{
+    return driver.isAndroid
+    ? 'android'
+    :'(//*[@name="₹1 Paid to Aditya Kumar"])[3]';
+  }
+
+  static get doneButton(): string{
+    return driver.isAndroid
+    ?'android'
+    :'(//*[@name="Done"])[4]'
+  }
+
 
 }
