@@ -73,7 +73,7 @@ describe('super money iOS End to End flow', () => {
 
   });
 
-  it.only('send money flow',async()=>
+  it('send money flow',async()=>
   {
     await driver.pause(5000);
     await e2ePage.sendMoney();
@@ -87,4 +87,11 @@ describe('super money iOS End to End flow', () => {
 
     await driver.pause(5000);
   })
+
+  it('smoney driver context and screenshot',async()=>
+  {
+    const context=await driver.getContexts();
+    console.log("context",context);
+    await driver.saveScreenshot('./screenshots/smoneyhomepage.png');
+  });
 });
