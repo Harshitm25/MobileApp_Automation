@@ -158,43 +158,44 @@ jobs:
       - name: Resolve device information
         id: device_info
         env:
-          INPUT_DEVICE_UDID: ${{ github.event.inputs.ios_device_udid }}
-          INPUT_PLATFORM_VERSION: ${{ github.event.inputs.ios_platform_version }}
+            INPUT_DEVICE_UDID: ${{ github.event.inputs.ios_device_udid }}
+            INPUT_PLATFORM_VERSION: ${{ github.event.inputs.ios_platform_version }}
         run: |
-          set -euo pipefail
-
-          if ! command -v jq >/dev/null 2>&1; then
-            brew install jq
-          fi
-
-          if [ -n "${INPUT_DEVICE_UDID}" ]; then
-            DEVICE_UDID="${INPUT_DEVICE_UDID}"
-          else
-            DEVICE_UDID=$(xcrun xcdevice list | jq -r '.[] | select(.simulator == false and (.platform == "iOS" or .platform == "iPadOS")) | .identifier' | head -n 1)
-          fi
-
-          if [ -z "${DEVICE_UDID}" ]; then
-            echo "No physical iOS device detected." >&2
-            exit 1
-          fi
-
-          DEVICE_NAME=$(xcrun xcdevice list | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .name")
-          DEVICE_VERSION=$(xcrun xcdevice list | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .operatingSystemVersion")
-
-          if [ -n "${INPUT_PLATFORM_VERSION}" ]; then
-            DEVICE_VERSION="${INPUT_PLATFORM_VERSION}"
-          fi
-
-          echo "Using device: ${DEVICE_NAME} (${DEVICE_UDID}) running iOS ${DEVICE_VERSION}"
-
-          echo "device_id=${DEVICE_UDID}" >> "$GITHUB_OUTPUT"
-          echo "device_name=${DEVICE_NAME}" >> "$GITHUB_OUTPUT"
-          echo "platform_version=${DEVICE_VERSION}" >> "$GITHUB_OUTPUT"
-
-          echo "UDID=${DEVICE_UDID}" >> "$GITHUB_ENV"
-          echo "DEVICE_NAME=${DEVICE_NAME}" >> "$GITHUB_ENV"
-          echo "PLATFORM_VERSION=${DEVICE_VERSION}" >> "$GITHUB_ENV"
-
+            set -euo pipefail
+        
+            if ! command -v jq >/dev/null 2>&1; then
+              brew install jq
+            fi
+        
+            if [ -n "${INPUT_DEVICE_UDID}" ]; then
+              DEVICE_UDID="${INPUT_DEVICE_UDID}"
+            else
+              DEVICE_UDID=$(xcrun xcdevice list | jq -r '.[] | select(.simulator == false and (.platform | contains("iphoneos"))) | .identifier' | head -n 1)
+            fi
+        
+            if [ -z "${DEVICE_UDID}" ]; then
+              echo "❌ No physical iOS device detected." >&2
+              exit 1
+            fi
+        
+            DEVICE_NAME=$(xcrun xcdevice list | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .name")
+            DEVICE_VERSION=$(xcrun xcdevice list | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .operatingSystemVersion" | awk '{print $1}')
+        
+            if [ -n "${INPUT_PLATFORM_VERSION}" ]; then
+              DEVICE_VERSION="${INPUT_PLATFORM_VERSION}"
+            fi
+        
+            echo "📱 Using device: ${DEVICE_NAME} (${DEVICE_UDID}) running iOS ${DEVICE_VERSION}"
+        
+            echo "device_id=${DEVICE_UDID}" >> "$GITHUB_OUTPUT"
+            echo "device_name=${DEVICE_NAME}" >> "$GITHUB_OUTPUT"
+            echo "platform_version=${DEVICE_VERSION}" >> "$GITHUB_OUTPUT"
+        
+            echo "UDID=${DEVICE_UDID}" >> "$GITHUB_ENV"
+            echo "DEVICE_NAME=${DEVICE_NAME}" >> "$GITHUB_ENV"
+            echo "PLATFORM_VERSION=${DEVICE_VERSION}" >> "$GITHUB_ENV"
+        
+        
       - name: Prepare device for testing
         run: |
           set -euo pipefail
