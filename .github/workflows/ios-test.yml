@@ -170,7 +170,7 @@ jobs:
           if [ -n "${INPUT_DEVICE_UDID}" ]; then
             DEVICE_UDID="${INPUT_DEVICE_UDID}"
           else
-            DEVICE_UDID=$(xcrun xcdevice list --json | jq -r '.[] | select(.simulator == false and (.platform == "iOS" or .platform == "iPadOS")) | .identifier' | head -n 1)
+            DEVICE_UDID=$(xcrun xcdevice list | jq -r '.[] | select(.simulator == false and (.platform == "iOS" or .platform == "iPadOS")) | .identifier' | head -n 1)
           fi
 
           if [ -z "${DEVICE_UDID}" ]; then
@@ -178,8 +178,8 @@ jobs:
             exit 1
           fi
 
-          DEVICE_NAME=$(xcrun xcdevice list --json | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .name")
-          DEVICE_VERSION=$(xcrun xcdevice list --json | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .operatingSystemVersion")
+          DEVICE_NAME=$(xcrun xcdevice list | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .name")
+          DEVICE_VERSION=$(xcrun xcdevice list | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .operatingSystemVersion")
 
           if [ -n "${INPUT_PLATFORM_VERSION}" ]; then
             DEVICE_VERSION="${INPUT_PLATFORM_VERSION}"
