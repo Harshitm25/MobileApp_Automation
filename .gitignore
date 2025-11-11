@@ -35,3 +35,9 @@ allure-report/
 
 # env
 .env
+
+# Self-hosted runner and build output
+actions-runner/
+work/
+_diag/
+node_modules/
