@@ -29,8 +29,8 @@ jobs:
     env:
       PLATFORM_NAME: iOS
       AUTOMATION_NAME: XCUITest
-      XCODE_ORG_ID: ${{ secrets.IOS_XCODE_ORG_ID }}
-      XCODE_SIGNING_ID: ${{ secrets.IOS_XCODE_SIGNING_ID }}
+      IOS_XCODE_ORG_ID: ${{ secrets.IOS_XCODE_ORG_ID }}
+      IOS_XCODE_SIGNING_ID: ${{ secrets.IOS_XCODE_SIGNING_ID }}
       WDABundleId: ${{ secrets.IOS_WDA_BUNDLE_ID }}
       Bundle_ID: ${{ secrets.IOS_APP_BUNDLE_ID }}
       IOS_SIM_APP_URL: ${{ secrets.IOS_SIMULATOR_APP_URL }}
