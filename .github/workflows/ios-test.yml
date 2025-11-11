@@ -1,0 +1,224 @@
+name: iOS App Automation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      test_real_device:
+        description: 'Run tests on real iOS device (requires self-hosted macOS runner)'
+        required: false
+        type: boolean
+        default: false
+      ios_device_udid:
+        description: 'Optional override for iOS device UDID when running on self-hosted hardware'
+        required: false
+        type: string
+      ios_platform_version:
+        description: 'Optional override for iOS platform version when running on self-hosted hardware'
+        required: false
+        type: string
+
+jobs:
+  ios-simulator-tests:
+    name: iOS simulator flow
+    runs-on: macos-14
+    if: github.event.inputs.test_real_device != 'true'
+    env:
+      PLATFORM_NAME: iOS
+      AUTOMATION_NAME: XCUITest
+      XCODE_ORG_ID: ${{ secrets.IOS_XCODE_ORG_ID }}
+      XCODE_SIGNING_ID: ${{ secrets.IOS_XCODE_SIGNING_ID }}
+      WDABundleId: ${{ secrets.IOS_WDA_BUNDLE_ID }}
+      Bundle_ID: ${{ secrets.IOS_APP_BUNDLE_ID }}
+      IOS_SIM_APP_URL: ${{ secrets.IOS_SIMULATOR_APP_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Select and boot simulator
+        id: boot_simulator
+        env:
+          SIMULATOR_NAME: iPhone 15
+        run: |
+          set -euo pipefail
+
+          if ! command -v jq >/dev/null 2>&1; then
+            brew install jq
+          fi
+
+          RUNTIME_ID=$(xcrun simctl list runtimes --json | jq -r '.runtimes[] | select(.name | test("^iOS 1[7-9].*")) | select(.isAvailable==true) | .identifier' | head -n 1)
+          if [ -z "$RUNTIME_ID" ]; then
+            echo "Unable to locate an available iOS runtime (17.x or newer)." >&2
+            exit 1
+          fi
+
+          SIMULATOR_UDID=$(xcrun simctl list devices --json | jq -r ".devices.\"${RUNTIME_ID}\"[] | select(.name==\"${SIMULATOR_NAME}\" and .isAvailable==true) | .udid" | head -n 1)
+          if [ -z "$SIMULATOR_UDID" ]; then
+            DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.$(echo "${SIMULATOR_NAME}" | tr ' ' '-')"
+            SIMULATOR_UDID=$(xcrun simctl create "${SIMULATOR_NAME}" "${DEVICE_TYPE}" "${RUNTIME_ID}")
+          fi
+
+          xcrun simctl boot "${SIMULATOR_UDID}" || true
+          xcrun simctl bootstatus "${SIMULATOR_UDID}" -b
+
+          SIM_RUNTIME_VERSION=$(xcrun simctl list devices --json | jq -r ".devices.\"${RUNTIME_ID}\"[] | select(.udid==\"${SIMULATOR_UDID}\") | .runtimeVersion")
+
+          echo "DEVICE_NAME=${SIMULATOR_NAME}" >> "$GITHUB_ENV"
+          echo "UDID=${SIMULATOR_UDID}" >> "$GITHUB_ENV"
+          echo "PLATFORM_VERSION=${SIM_RUNTIME_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Install app on simulator (optional)
+        if: env.IOS_SIM_APP_URL != ''
+        run: |
+          set -euo pipefail
+
+          mkdir -p tmp/simulator-app
+          curl -L "$IOS_SIM_APP_URL" -o tmp/simulator-app/app.zip
+          unzip -q tmp/simulator-app/app.zip -d tmp/simulator-app
+
+          APP_PATH=$(find tmp/simulator-app -maxdepth 2 -name "*.app" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Unable to locate .app bundle inside the downloaded archive." >&2
+            exit 1
+          fi
+
+          if [ -z "${UDID:-}" ]; then
+            echo "Simulator UDID is not available in the environment." >&2
+            exit 1
+          fi
+
+          xcrun simctl install "$UDID" "$APP_PATH"
+
+      - name: Run WDIO tests
+        env:
+          PLATFORM_NAME: ${{ env.PLATFORM_NAME }}
+          DEVICE_NAME: ${{ env.DEVICE_NAME }}
+          PLATFORM_VERSION: ${{ env.PLATFORM_VERSION }}
+          AUTOMATION_NAME: ${{ env.AUTOMATION_NAME }}
+          UDID: ${{ env.UDID }}
+          XCODE_ORG_ID: ${{ env.XCODE_ORG_ID }}
+          XCODE_SIGNING_ID: ${{ env.XCODE_SIGNING_ID }}
+          WDABundleId: ${{ env.WDABundleId }}
+          Bundle_ID: ${{ env.Bundle_ID }}
+        run: npx wdio run ./wdio.conf.ts
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-ios-simulator
+          path: allure-results
+
+  ios-real-device-tests:
+    name: iOS real device flow
+    runs-on: self-hosted
+    if: github.event.inputs.test_real_device == 'true'
+    env:
+      PLATFORM_NAME: iOS
+      AUTOMATION_NAME: XCUITest
+      XCODE_ORG_ID: ${{ secrets.IOS_XCODE_ORG_ID }}
+      XCODE_SIGNING_ID: ${{ secrets.IOS_XCODE_SIGNING_ID }}
+      WDABundleId: ${{ secrets.IOS_WDA_BUNDLE_ID }}
+      Bundle_ID: ${{ secrets.IOS_APP_BUNDLE_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify connected iOS devices
+        run: |
+          xcrun xcdevice list
+
+      - name: Resolve device information
+        id: device_info
+        env:
+          INPUT_DEVICE_UDID: ${{ github.event.inputs.ios_device_udid }}
+          INPUT_PLATFORM_VERSION: ${{ github.event.inputs.ios_platform_version }}
+        run: |
+          set -euo pipefail
+
+          if ! command -v jq >/dev/null 2>&1; then
+            brew install jq
+          fi
+
+          if [ -n "${INPUT_DEVICE_UDID}" ]; then
+            DEVICE_UDID="${INPUT_DEVICE_UDID}"
+          else
+            DEVICE_UDID=$(xcrun xcdevice list --json | jq -r '.[] | select(.simulator == false and (.platform == "iOS" or .platform == "iPadOS")) | .identifier' | head -n 1)
+          fi
+
+          if [ -z "${DEVICE_UDID}" ]; then
+            echo "No physical iOS device detected." >&2
+            exit 1
+          fi
+
+          DEVICE_NAME=$(xcrun xcdevice list --json | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .name")
+          DEVICE_VERSION=$(xcrun xcdevice list --json | jq -r ".[] | select(.identifier==\"${DEVICE_UDID}\") | .operatingSystemVersion")
+
+          if [ -n "${INPUT_PLATFORM_VERSION}" ]; then
+            DEVICE_VERSION="${INPUT_PLATFORM_VERSION}"
+          fi
+
+          echo "Using device: ${DEVICE_NAME} (${DEVICE_UDID}) running iOS ${DEVICE_VERSION}"
+
+          echo "device_id=${DEVICE_UDID}" >> "$GITHUB_OUTPUT"
+          echo "device_name=${DEVICE_NAME}" >> "$GITHUB_OUTPUT"
+          echo "platform_version=${DEVICE_VERSION}" >> "$GITHUB_OUTPUT"
+
+          echo "UDID=${DEVICE_UDID}" >> "$GITHUB_ENV"
+          echo "DEVICE_NAME=${DEVICE_NAME}" >> "$GITHUB_ENV"
+          echo "PLATFORM_VERSION=${DEVICE_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Prepare device for testing
+        run: |
+          set -euo pipefail
+
+          if [ -z "${UDID:-}" ]; then
+            echo "UDID is not exported." >&2
+            exit 1
+          fi
+
+          # Trust the development certificate & launch WebDriverAgent if needed
+          echo "Ensuring device is trusted and ready for automation..."
+          xcrun xcdevice list
+
+      - name: Run WDIO tests on real device
+        env:
+          PLATFORM_NAME: ${{ env.PLATFORM_NAME }}
+          DEVICE_NAME: ${{ env.DEVICE_NAME }}
+          PLATFORM_VERSION: ${{ env.PLATFORM_VERSION }}
+          AUTOMATION_NAME: ${{ env.AUTOMATION_NAME }}
+          UDID: ${{ env.UDID }}
+          XCODE_ORG_ID: ${{ env.XCODE_ORG_ID }}
+          XCODE_SIGNING_ID: ${{ env.XCODE_SIGNING_ID }}
+          WDABundleId: ${{ env.WDABundleId }}
+          Bundle_ID: ${{ env.Bundle_ID }}
+        run: npx wdio run ./wdio.conf.ts
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-ios-real-device
+          path: allure-results
+
